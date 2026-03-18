@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+
+# Model cache (mount as volume instead)
+models_cache/
+
+# Dev
+.env
+.git/
+.gitignore
+*.md
+*.sh
+tests/
+.pytest_cache/
+
+# Temp
+tmp/
+*.tmp
+uploads/

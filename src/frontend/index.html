@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>GRF VisionIQ — Gudsky Research Foundation</title>
+<link rel="icon" href="/static/logo.jpg" type="image/jpeg"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ══════════════════════════════════════════════════════
+   THEME TOKENS
+══════════════════════════════════════════════════════ */
+:root {
+  --blue:        #1A56DB;
+  --blue-light:  #3B82F6;
+  --blue-dark:   #1E3A8A;
+  --blue-dim:    rgba(26,86,219,.13);
+  --yellow:      #F59E0B;
+  --yellow-dim:  rgba(245,158,11,.15);
+  --green:       #10B981;
+  --green-dim:   rgba(16,185,129,.15);
+  --red:         #EF4444;
+  --white:       #FFFFFF;
+  --r:           10px;
+}
+
+/* ── Dark mode (default) ── */
+[data-theme="dark"] {
+  --bg:          #0D1117;
+  --bg2:         #161B22;
+  --surface:     #1C2128;
+  --surface2:    #21262D;
+  --border:      #30363D;
+  --border2:     #3D444D;
+  --text:        #E6EDF3;
+  --text-muted:  #7D8590;
+  --text-dim:    #9198A1;
+  --logo-bg:     #FFFFFF;
+  --logo-radius: 10px;
+  --shadow:      0 16px 48px rgba(0,0,0,.6);
+  --code-bg:     #161B22;
+  --code-text:   #79C0FF;
+}
+
+/* ── Light mode ── */
+[data-theme="light"] {
+  --bg:          #F6F8FA;
+  --bg2:         #FFFFFF;
+  --surface:     #FFFFFF;
+  --surface2:    #F0F3F7;
+  --border:      #D0D7DE;
+  --border2:     #BDC4CC;
+  --text:        #1F2328;
+  --text-muted:  #636C76;
+  --text-dim:    #57606A;
+  --logo-bg:     transparent;
+  --logo-radius: 10px;
+  --shadow:      0 8px 32px rgba(0,0,0,.12);
+  --code-bg:     #F0F3F7;
+  --code-text:   #0550AE;
+}
+
+html, body { height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  overflow: hidden;
+  transition: background .25s, color .25s;
+}
+
+/* ══════════════════════════════════════════════════════
+   AUTH SCREEN
+══════════════════════════════════════════════════════ */
+#auth-screen {
+  position: fixed; inset: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  background: var(--bg);
+}
+
+/* gradient strip at top */
+#auth-screen::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 4px;
+  background: linear-gradient(90deg, var(--blue), var(--blue-light), var(--yellow), var(--green));
+}
+
+.auth-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 40px 36px 32px;
+  width: 100%; max-width: 430px;
+  box-shadow: var(--shadow);
+  position: relative;
+}
+
+/* Logo area — white circle so blue logo is always visible */
+.auth-logo-wrap {
+  display: flex; flex-direction: column; align-items: center;
+  margin-bottom: 24px; gap: 12px;
+}
+.logo-circle {
+  width: 88px; height: 88px; border-radius: 50%;
+  background: #FFFFFF;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 0 3px var(--blue-dim), 0 4px 20px rgba(26,86,219,.25);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.logo-circle img { width: 76px; height: 76px; object-fit: contain; }
+.auth-org-name {
+  font-size: 18px; font-weight: 800; color: var(--blue);
+  text-align: center; letter-spacing: -.01em;
+}
+.auth-org-sub {
+  font-size: 12px; color: var(--text-muted);
+  text-align: center; margin-top: -6px;
+}
+
+/* Accent bar under logo */
+.auth-accent-bar {
+  height: 3px; border-radius: 2px; margin-bottom: 24px;
+  background: linear-gradient(90deg, var(--blue), var(--blue-light), var(--yellow));
+}
+
+/* Tabs */
+.auth-tabs {
+  display: flex; background: var(--bg2);
+  border: 1px solid var(--border); border-radius: var(--r);
+  padding: 3px; margin-bottom: 24px; gap: 3px;
+}
+.auth-tab {
+  flex: 1; text-align: center; padding: 8px;
+  border-radius: 8px; cursor: pointer; font-size: 13px;
+  font-weight: 600; color: var(--text-muted); transition: all .2s;
+}
+.auth-tab.active {
+  background: var(--blue); color: #fff;
+  box-shadow: 0 2px 8px rgba(26,86,219,.35);
+}
+
+/* Fields */
+.field { margin-bottom: 14px; }
+.field label { display: block; font-size: 12px; font-weight: 600; color: var(--text-dim); margin-bottom: 5px; }
+.field input {
+  width: 100%; background: var(--bg2); border: 1.5px solid var(--border);
+  border-radius: 8px; padding: 10px 13px; color: var(--text); font-size: 14px; outline: none;
+  transition: border-color .2s, box-shadow .2s;
+}
+.field input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-dim); }
+
+.auth-btn {
+  width: 100%; padding: 11px; border: none; border-radius: 9px;
+  background: linear-gradient(135deg, var(--blue-dark), var(--blue));
+  color: #fff; font-size: 14px; font-weight: 700; cursor: pointer;
+  margin-top: 4px; transition: all .2s; letter-spacing: .01em;
+  box-shadow: 0 4px 14px rgba(26,86,219,.4);
+}
+.auth-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(26,86,219,.5); }
+.auth-btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+.auth-error { color: var(--red); font-size: 12px; margin-top: 8px; text-align: center; min-height: 18px; }
+
+/* Cert badges */
+.auth-footer {
+  margin-top: 28px; text-align: center;
+  border-top: 1px solid var(--border); padding-top: 18px;
+  font-size: 11px; color: var(--text-muted);
+}
+.cert-row { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin-top: 10px; }
+.cert { padding: 3px 9px; border-radius: 999px; font-size: 10px; font-weight: 700; border: 1px solid; }
+.cert-blue   { background: var(--blue-dim);   color: var(--blue-light); border-color: rgba(59,130,246,.3); }
+.cert-yellow { background: var(--yellow-dim); color: var(--yellow);     border-color: rgba(245,158,11,.3); }
+.cert-green  { background: var(--green-dim);  color: var(--green);      border-color: rgba(16,185,129,.3); }
+
+/* Theme toggle on auth screen */
+.auth-theme-btn {
+  position: absolute; top: 16px; right: 16px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 6px 10px; cursor: pointer;
+  font-size: 16px; color: var(--text-muted); transition: all .2s;
+}
+.auth-theme-btn:hover { border-color: var(--blue); color: var(--text); }
+
+/* ══════════════════════════════════════════════════════
+   MAIN APP LAYOUT
+══════════════════════════════════════════════════════ */
+.app { display: flex; flex-direction: column; height: 100vh; }
+
+/* Top gradient strip */
+.app::before {
+  content: '';
+  display: block; height: 3px; flex-shrink: 0;
+  background: linear-gradient(90deg, var(--blue-dark), var(--blue), var(--blue-light), var(--yellow), var(--green));
+}
+
+header {
+  flex-shrink: 0; display: flex; align-items: center; gap: 10px;
+  padding: 0 18px; height: 54px;
+  background: var(--surface); border-bottom: 1px solid var(--border);
+}
+
+/* Logo in header — always on white circle */
+.hdr-logo-circle {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: #FFFFFF; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; box-shadow: 0 0 0 2px var(--blue-dim);
+  overflow: hidden;
+}
+.hdr-logo-circle img { width: 30px; height: 30px; object-fit: contain; }
+.hdr-text { display: flex; flex-direction: column; line-height: 1.2; }
+.hdr-name { font-size: 13px; font-weight: 800; color: var(--blue); }
+.hdr-sub  { font-size: 10px; color: var(--text-muted); }
+
+.hdr-vrc {
+  font-size: 10px; font-weight: 700; letter-spacing: .04em;
+  background: linear-gradient(135deg, var(--blue-dim), var(--yellow-dim));
+  border: 1px solid rgba(59,130,246,.25);
+  color: var(--blue-light); border-radius: 999px; padding: 3px 10px;
+  white-space: nowrap;
+}
+
+.hdr-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+
+.status-pill {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 999px; padding: 4px 11px; font-size: 11px; font-weight: 600;
+  color: var(--text-muted); transition: all .3s;
+}
+.status-pill.connected { color: var(--green); border-color: rgba(16,185,129,.3); background: var(--green-dim); }
+.status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--red); flex-shrink: 0; transition: all .3s; }
+.status-pill.connected .status-dot { background: var(--green); box-shadow: 0 0 6px var(--green); }
+
+.user-pill {
+  display: flex; align-items: center; gap: 7px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 999px; padding: 4px 12px 4px 6px; font-size: 12px; font-weight: 600;
+}
+.avatar {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue), var(--blue-light));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 800; color: #fff; flex-shrink: 0;
+}
+
+.icon-btn {
+  width: 34px; height: 34px; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--surface2);
+  color: var(--text-muted); font-size: 16px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; transition: all .2s;
+}
+.icon-btn:hover { border-color: var(--blue); color: var(--text); }
+
+.logout-btn {
+  background: none; border: 1px solid var(--border);
+  border-radius: 8px; padding: 5px 11px; font-size: 12px; font-weight: 600;
+  color: var(--text-muted); cursor: pointer; transition: all .2s;
+}
+.logout-btn:hover { border-color: var(--red); color: var(--red); background: rgba(239,68,68,.06); }
+
+.body { flex: 1; display: flex; overflow: hidden; }
+
+/* ══════════════════════════════════════════════════════
+   SIDEBAR
+══════════════════════════════════════════════════════ */
+.sidebar {
+  width: 292px; flex-shrink: 0;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  overflow-y: auto; padding: 16px; gap: 16px;
+}
+.sidebar::-webkit-scrollbar { width: 4px; }
+.sidebar::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.sec-title {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .08em; color: var(--text-muted); margin-bottom: 8px;
+}
+
+/* Drop zone */
+.drop-zone {
+  border: 2px dashed var(--border2); border-radius: var(--r);
+  padding: 22px 12px; text-align: center; cursor: pointer;
+  transition: all .25s; background: var(--bg);
+}
+.drop-zone:hover, .drop-zone.drag-over {
+  border-color: var(--blue); background: var(--blue-dim);
+}
+.drop-zone .dz-icon { font-size: 26px; margin-bottom: 6px; }
+.drop-zone p { font-size: 13px; color: var(--text-dim); }
+.drop-zone small { font-size: 10px; color: var(--text-muted); display: block; margin-top: 3px; }
+#file-input { display: none; }
+
+#video-preview {
+  width: 100%; border-radius: var(--r); background: #000;
+  display: none; max-height: 140px; object-fit: contain;
+  border: 1px solid var(--border);
+}
+
+.file-badge {
+  display: none; align-items: center; gap: 8px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 8px 10px; font-size: 12px;
+}
+.file-badge .fn { font-weight: 600; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.file-badge .fs { color: var(--text-muted); flex-shrink: 0; }
+
+.progress-wrap { display: none; }
+.progress-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; margin-top: 6px; }
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--blue), var(--blue-light), var(--yellow));
+  width: 0%; transition: width .3s; border-radius: 2px;
+}
+.progress-label { font-size: 11px; color: var(--text-muted); margin-top: 4px; text-align: center; }
+
+/* Buttons */
+.btn {
+  width: 100%; padding: 10px; border-radius: var(--r); border: none;
+  font-size: 13px; font-weight: 600; cursor: pointer; transition: all .2s;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+}
+.btn:disabled { opacity: .35; cursor: not-allowed; }
+.btn-primary {
+  background: linear-gradient(135deg, var(--blue-dark), var(--blue));
+  color: #fff; box-shadow: 0 3px 12px rgba(26,86,219,.35);
+}
+.btn-primary:not(:disabled):hover { transform: translateY(-1px); box-shadow: 0 5px 16px rgba(26,86,219,.45); }
+
+.btn-yellow {
+  background: linear-gradient(135deg, #D97706, var(--yellow));
+  color: #fff; box-shadow: 0 3px 10px rgba(245,158,11,.3);
+}
+.btn-yellow:not(:disabled):hover { transform: translateY(-1px); }
+
+.btn-ghost {
+  background: transparent; border: 1px solid var(--border2); color: var(--text-dim);
+}
+.btn-ghost:not(:disabled):hover { border-color: var(--blue); color: var(--text); }
+
+/* Info card */
+.info-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--r); overflow: hidden;
+}
+.info-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 7px 11px; border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+.info-row:last-child { border-bottom: none; }
+.info-row .lbl { color: var(--text-muted); }
+
+/* Badges */
+.badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 10px; font-weight: 700; }
+.badge-green  { background: var(--green-dim);  color: var(--green); }
+.badge-yellow { background: var(--yellow-dim); color: var(--yellow); }
+.badge-blue   { background: var(--blue-dim);   color: var(--blue-light); }
+
+/* GPU bars */
+.gpu-wrap { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+.gpu-item {}
+.gpu-lbl { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
+.gpu-bar { height: 5px; background: var(--border2); border-radius: 3px; overflow: hidden; }
+.gpu-bar-fill {
+  height: 100%; border-radius: 3px;
+  background: linear-gradient(90deg, var(--blue), var(--blue-light), var(--yellow));
+  transition: width .6s;
+}
+
+/* ══════════════════════════════════════════════════════
+   CHAT
+══════════════════════════════════════════════════════ */
+.chat-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg); }
+
+.messages {
+  flex: 1; overflow-y: auto; padding: 20px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.messages::-webkit-scrollbar { width: 5px; }
+.messages::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+/* Empty state */
+.empty-state {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 10px;
+  color: var(--text-muted); padding: 40px; text-align: center;
+}
+.empty-state .es-icon { font-size: 48px; margin-bottom: 6px; }
+.empty-state h2 { font-size: 19px; font-weight: 800; color: var(--text); }
+.empty-state p { font-size: 13px; max-width: 300px; color: var(--text-dim); }
+
+.chip-grid { display: flex; flex-wrap: wrap; gap: 7px; justify-content: center; margin-top: 8px; }
+.chip {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 999px; padding: 5px 13px; font-size: 12px;
+  cursor: pointer; color: var(--text-dim); transition: all .2s;
+}
+.chip:hover { border-color: var(--blue); color: var(--blue-light); background: var(--blue-dim); }
+
+/* Message bubbles */
+.msg { max-width: 76%; display: flex; flex-direction: column; gap: 3px; animation: msgIn .2s ease; }
+@keyframes msgIn { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform: none; } }
+.msg-user { align-self: flex-end; align-items: flex-end; }
+.msg-ai   { align-self: flex-start; align-items: flex-start; }
+.msg-sys  { align-self: center; }
+
+.msg-bubble {
+  padding: 11px 15px; border-radius: 14px;
+  font-size: 14px; line-height: 1.65; white-space: pre-wrap; word-break: break-word;
+}
+.msg-user .msg-bubble {
+  background: linear-gradient(135deg, var(--blue-dark), var(--blue));
+  color: #fff; border-bottom-right-radius: 4px;
+  box-shadow: 0 3px 12px rgba(26,86,219,.35);
+}
+.msg-ai .msg-bubble {
+  background: var(--surface); border: 1px solid var(--border);
+  border-bottom-left-radius: 4px; color: var(--text);
+}
+.msg-sys .msg-bubble {
+  background: transparent; border: 1px solid var(--border);
+  color: var(--text-muted); font-size: 12px;
+  border-radius: 999px; padding: 3px 13px;
+}
+.msg-meta { font-size: 11px; color: var(--text-muted); padding: 0 4px; }
+
+/* Thinking */
+.thinking-bubble {
+  background: var(--surface); border: 1px solid var(--border);
+  border-bottom-left-radius: 4px; padding: 13px 17px;
+  border-radius: 14px; display: flex; align-items: center;
+  gap: 11px; font-size: 13px; color: var(--text-muted); font-style: italic;
+}
+.dots { display: flex; gap: 4px; }
+.dots span {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--blue-light); animation: bounce .9s ease infinite;
+}
+.dots span:nth-child(2) { animation-delay:.15s; background: var(--yellow); }
+.dots span:nth-child(3) { animation-delay:.30s; background: var(--green); }
+@keyframes bounce { 0%,80%,100%{transform:scale(.7);opacity:.5} 40%{transform:scale(1);opacity:1} }
+
+.copy-btn {
+  background: none; border: none; cursor: pointer;
+  color: var(--text-muted); font-size: 12px; padding: 2px 6px;
+  border-radius: 4px; opacity: 0; transition: all .2s;
+}
+.msg-ai:hover .copy-btn { opacity: 1; }
+.copy-btn:hover { background: var(--border); color: var(--text); }
+
+/* Input bar */
+.input-bar {
+  flex-shrink: 0; padding: 14px 20px;
+  border-top: 1px solid var(--border);
+  background: var(--surface); display: flex; gap: 10px; align-items: flex-end;
+}
+.input-wrap {
+  flex: 1; background: var(--bg2); border: 1.5px solid var(--border);
+  border-radius: 12px; padding: 9px 13px;
+  display: flex; align-items: flex-end; gap: 8px; transition: border-color .2s, box-shadow .2s;
+}
+.input-wrap:focus-within {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px var(--blue-dim);
+}
+#question-input {
+  flex: 1; background: none; border: none; outline: none;
+  color: var(--text); font-size: 14px; line-height: 1.5;
+  resize: none; max-height: 110px; font-family: inherit;
+}
+#question-input::placeholder { color: var(--text-muted); }
+
+#send-btn {
+  width: 40px; height: 40px; border-radius: 10px; border: none;
+  background: linear-gradient(135deg, var(--blue-dark), var(--blue));
+  color: #fff; font-size: 17px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .2s; flex-shrink: 0;
+  box-shadow: 0 3px 10px rgba(26,86,219,.4);
+}
+#send-btn:not(:disabled):hover { transform: scale(1.07); box-shadow: 0 5px 16px rgba(26,86,219,.5); }
+#send-btn:disabled { opacity: .3; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* Footer watermark */
+.vrc-tag {
+  font-size: 10px; color: var(--text-muted); text-align: center;
+  padding: 5px 16px; border-top: 1px solid var(--border);
+  background: var(--surface);
+  display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap;
+}
+.vrc-tag .dot { width: 3px; height: 3px; border-radius: 50%; background: var(--border2); }
+.vrc-tag .tag-blue   { color: var(--blue-light); font-weight: 600; }
+.vrc-tag .tag-yellow { color: var(--yellow);     font-weight: 600; }
+.vrc-tag .tag-green  { color: var(--green);       font-weight: 600; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════
+     AUTH SCREEN
+══════════════════════════════════════════════════════ -->
+<div id="auth-screen">
+  <button class="auth-theme-btn" onclick="toggleTheme()" title="Toggle theme" id="auth-theme-btn">🌙</button>
+
+  <div class="auth-card">
+    <div class="auth-logo-wrap">
+      <div class="logo-circle">
+        <img src="/static/logo.jpg" alt="GRF Logo" onerror="this.parentElement.innerHTML='<span style=font-size:32px>🔬</span>'"/>
+      </div>
+      <div class="auth-org-name">Gudsky Research Foundation</div>
+      <div class="auth-org-sub">GRF VisionIQ · Virtual Research Center</div>
+    </div>
+
+    <div class="auth-accent-bar"></div>
+
+    <div class="auth-tabs">
+      <div class="auth-tab active" id="tab-login"    onclick="switchTab('login')">Sign In</div>
+      <div class="auth-tab"        id="tab-register" onclick="switchTab('register')">Create Account</div>
+    </div>
+
+    <!-- Login -->
+    <div id="form-login">
+      <div class="field">
+        <label>Email Address</label>
+        <input type="email" id="l-email" placeholder="you@example.com" autocomplete="email"/>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password"/>
+      </div>
+      <button class="auth-btn" id="login-btn" onclick="doLogin()">Sign In →</button>
+      <div class="auth-error" id="login-err"></div>
+    </div>
+
+    <!-- Register -->
+    <div id="form-register" style="display:none">
+      <div class="field">
+        <label>Full Name</label>
+        <input type="text" id="r-name" placeholder="Dr. Jane Smith"/>
+      </div>
+      <div class="field">
+        <label>Email Address</label>
+        <input type="email" id="r-email" placeholder="you@example.com" autocomplete="email"/>
+      </div>
+      <div class="field">
+        <label>Password <span style="font-weight:400;color:var(--text-muted)">(min 6 characters)</span></label>
+        <input type="password" id="r-pass" placeholder="••••••••" autocomplete="new-password"/>
+      </div>
+      <button class="auth-btn" id="register-btn" onclick="doRegister()">Create Account →</button>
+      <div class="auth-error" id="register-err"></div>
+    </div>
+
+    <div class="auth-footer">
+      <strong style="color:var(--text-dim)">Gudsky Research Foundation</strong> &nbsp;·&nbsp; Section 8 Non-Profit
+      <div class="cert-row">
+        <span class="cert cert-blue">ISO Certified</span>
+        <span class="cert cert-blue">MSME</span>
+        <span class="cert cert-yellow">AICTE Approved</span>
+        <span class="cert cert-yellow">Startup India</span>
+        <span class="cert cert-green">NGO Darpan</span>
+        <span class="cert cert-green">Section 8</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     MAIN APP
+══════════════════════════════════════════════════════ -->
+<div class="app" id="app" style="display:none">
+
+  <header>
+    <div class="hdr-logo-circle">
+      <img src="/static/logo.jpg" alt="GRF" onerror="this.parentElement.innerHTML='🔬'"/>
+    </div>
+    <div class="hdr-text">
+      <div class="hdr-name">GRF VisionIQ</div>
+      <div class="hdr-sub">Gudsky Research Foundation</div>
+    </div>
+    <span class="hdr-vrc">✦ Virtual Research Center</span>
+
+    <div class="hdr-right">
+      <div class="status-pill" id="status-pill">
+        <div class="status-dot"></div>
+        <span id="status-label">Connecting…</span>
+      </div>
+      <div class="user-pill">
+        <div class="avatar" id="user-avatar">?</div>
+        <span id="user-name-label">—</span>
+      </div>
+      <button class="icon-btn" onclick="toggleTheme()" id="app-theme-btn" title="Toggle dark/light mode">🌙</button>
+      <button class="logout-btn" onclick="doLogout()">Sign Out</button>
+    </div>
+  </header>
+
+  <div class="body">
+
+    <!-- ── Sidebar ── -->
+    <div class="sidebar">
+      <div>
+        <div class="sec-title">📁 Upload Video</div>
+        <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+          <div class="dz-icon">🎬</div>
+          <p><strong>Click or drag & drop</strong></p>
+          <small>MP4, MOV, MKV, AVI, WebM · Max 100 MB</small>
+          <input type="file" id="file-input" accept="video/*"/>
+        </div>
+        <video id="video-preview" controls></video>
+        <div class="file-badge" id="file-badge">
+          <span>🎞</span>
+          <span class="fn" id="file-name-lbl">—</span>
+          <span class="fs" id="file-size-lbl">—</span>
+        </div>
+        <div class="progress-wrap" id="progress-wrap">
+          <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+          <div class="progress-label" id="progress-label">Uploading…</div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="upload-btn" disabled>⬆ Upload Video</button>
+      <button class="btn btn-ghost"   id="clear-btn">🗑 Clear Conversation</button>
+
+      <!-- Server stats -->
+      <div>
+        <div class="sec-title">🖥 System Status</div>
+        <div class="info-card">
+          <div class="info-row">
+            <span class="lbl">Model</span>
+            <span id="srv-model" style="font-size:11px;font-weight:600;color:var(--blue-light)">—</span>
+          </div>
+          <div class="info-row">
+            <span class="lbl">Status</span>
+            <span id="srv-status">—</span>
+          </div>
+          <div class="info-row">
+            <span class="lbl">Active Users</span>
+            <span id="srv-users">—</span>
+          </div>
+          <div class="info-row">
+            <span class="lbl">RAM Free</span>
+            <span id="srv-ram">—</span>
+          </div>
+        </div>
+        <div class="gpu-wrap" id="gpu-section"></div>
+      </div>
+    </div>
+
+    <!-- ── Chat ── -->
+    <div class="chat-area">
+      <div class="messages" id="messages">
+        <div class="empty-state" id="empty-state">
+          <div class="es-icon">🤖</div>
+          <h2>Ask anything about your video</h2>
+          <p>Upload a video on the left, then ask questions in natural language.</p>
+          <div class="chip-grid">
+            <span class="chip" onclick="useChip(this)">Describe what's happening</span>
+            <span class="chip" onclick="useChip(this)">Summarize the video</span>
+            <span class="chip" onclick="useChip(this)">How many people are visible?</span>
+            <span class="chip" onclick="useChip(this)">What objects are in the scene?</span>
+            <span class="chip" onclick="useChip(this)">List key events in order</span>
+            <span class="chip" onclick="useChip(this)">What is the mood or tone?</span>
+            <span class="chip" onclick="useChip(this)">Is there any text visible?</span>
+            <span class="chip" onclick="useChip(this)">Describe the environment</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="input-bar">
+        <div class="input-wrap">
+          <textarea id="question-input" rows="1" placeholder="Ask a question about the video…" disabled></textarea>
+        </div>
+        <button id="send-btn" disabled title="Send (Enter)">➤</button>
+      </div>
+
+      <div class="vrc-tag">
+        <span class="tag-blue">GRF VisionIQ</span>
+        <span class="dot"></span>
+        <span class="tag-yellow">Virtual Research Center</span>
+        <span class="dot"></span>
+        <span class="tag-green">Gudsky Research Foundation</span>
+        <span class="dot"></span>
+        <span>Section 8 · ISO · MSME · AICTE · Startup India · NGO Darpan</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────────
+let ws          = null;
+let sessionId   = null;
+let authToken   = localStorage.getItem('grf_token') || null;
+let userName    = localStorage.getItem('grf_name')  || null;
+let videoReady  = false;
+let busy        = false;
+let selectedFile = null;
+let isDark      = localStorage.getItem('grf_theme') !== 'light';
+
+// ── Theme ──────────────────────────────────────────────────────────────────────
+function applyTheme() {
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  const icon = isDark ? '🌙' : '☀️';
+  const ab = document.getElementById('auth-theme-btn');
+  const tb = document.getElementById('app-theme-btn');
+  if (ab) ab.textContent = icon;
+  if (tb) tb.textContent = icon;
+}
+function toggleTheme() {
+  isDark = !isDark;
+  localStorage.setItem('grf_theme', isDark ? 'dark' : 'light');
+  applyTheme();
+}
+applyTheme();
+
+// ── Boot ───────────────────────────────────────────────────────────────────────
+window.onload = async () => {
+  if (authToken && userName) {
+    try {
+      const r = await fetch('/auth/validate?token=' + authToken);
+      if (r.ok) { showApp(); return; }
+    } catch(e) {}
+    localStorage.removeItem('grf_token');
+    localStorage.removeItem('grf_name');
+    authToken = null; userName = null;
+  }
+  ['l-email','l-pass'].forEach(id => {
+    document.getElementById(id)?.addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+  });
+  ['r-name','r-email','r-pass'].forEach(id => {
+    document.getElementById(id)?.addEventListener('keydown', e => { if(e.key==='Enter') doRegister(); });
+  });
+};
+
+// ── Auth tab ───────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  document.getElementById('form-login').style.display    = tab==='login'    ? '' : 'none';
+  document.getElementById('form-register').style.display = tab==='register' ? '' : 'none';
+  document.getElementById('tab-login').className    = 'auth-tab'+(tab==='login'?' active':'');
+  document.getElementById('tab-register').className = 'auth-tab'+(tab==='register'?' active':'');
+  document.getElementById('login-err').textContent    = '';
+  document.getElementById('register-err').textContent = '';
+}
+
+// ── Login ──────────────────────────────────────────────────────────────────────
+async function doLogin() {
+  const email = document.getElementById('l-email').value.trim();
+  const pass  = document.getElementById('l-pass').value;
+  const btn   = document.getElementById('login-btn');
+  const err   = document.getElementById('login-err');
+  if (!email || !pass) { err.textContent = 'Please fill in all fields.'; return; }
+  btn.disabled = true; btn.textContent = 'Signing in…'; err.textContent = '';
+  try {
+    const res  = await fetch('/auth/login', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email, password:pass}) });
+    const data = await res.json();
+    if (!res.ok) { err.textContent = data.detail || 'Login failed.'; return; }
+    authToken = data.token; userName = data.name;
+    localStorage.setItem('grf_token', authToken);
+    localStorage.setItem('grf_name',  userName);
+    showApp();
+  } catch(e) { err.textContent = 'Network error. Please try again.'; }
+  finally    { btn.disabled = false; btn.textContent = 'Sign In →'; }
+}
+
+// ── Register ───────────────────────────────────────────────────────────────────
+async function doRegister() {
+  const name  = document.getElementById('r-name').value.trim();
+  const email = document.getElementById('r-email').value.trim();
+  const pass  = document.getElementById('r-pass').value;
+  const btn   = document.getElementById('register-btn');
+  const err   = document.getElementById('register-err');
+  if (!name||!email||!pass) { err.textContent = 'Please fill in all fields.'; return; }
+  btn.disabled = true; btn.textContent = 'Creating…'; err.textContent = '';
+  try {
+    const res  = await fetch('/auth/register', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name, email, password:pass}) });
+    const data = await res.json();
+    if (!res.ok) { err.textContent = data.detail || 'Registration failed.'; return; }
+    authToken = data.token; userName = name;
+    localStorage.setItem('grf_token', authToken);
+    localStorage.setItem('grf_name',  userName);
+    showApp();
+  } catch(e) { err.textContent = 'Network error. Please try again.'; }
+  finally    { btn.disabled = false; btn.textContent = 'Create Account →'; }
+}
+
+// ── Logout ─────────────────────────────────────────────────────────────────────
+async function doLogout() {
+  if (authToken) await fetch(`/auth/logout?token=${authToken}`, { method:'POST' }).catch(()=>{});
+  localStorage.removeItem('grf_token');
+  localStorage.removeItem('grf_name');
+  authToken = null; userName = null;
+  if (ws) { ws.onclose = null; ws.close(); ws = null; }
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('auth-screen').style.display = 'flex';
+  switchTab('login');
+}
+
+// ── Show app ───────────────────────────────────────────────────────────────────
+function showApp() {
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  document.getElementById('user-name-label').textContent = userName;
+  document.getElementById('user-avatar').textContent = (userName||'?')[0].toUpperCase();
+  applyTheme();
+  connect();
+}
+
+// ── WebSocket ──────────────────────────────────────────────────────────────────
+function connect() {
+  if (ws && ws.readyState < 2) return;
+  const proto = location.protocol==='https:' ? 'wss' : 'ws';
+  ws = new WebSocket(`${proto}://${location.host}/ws`);
+  ws.onopen    = () => {};
+  ws.onmessage = e => handleMsg(JSON.parse(e.data));
+  ws.onclose   = () => { setConnected(false); sessionId=null; setTimeout(connect, 3000); };
+  ws.onerror   = () => ws.close();
+}
+
+function handleMsg(msg) {
+  switch(msg.type) {
+    case 'connected':
+      sessionId = msg.session_id;
+      ws.send(JSON.stringify({ type:'auth', token:authToken }));
+      break;
+    case 'auth_ok':
+      setConnected(true);
+      sysMsg(`🟢 Connected — Welcome, ${msg.name}!`);
+      pollHealth();
+      break;
+    case 'auth_fail':
+      sysMsg('⚠ Session expired. Please sign in again.');
+      doLogout();
+      break;
+    case 'thinking': showThinking(); break;
+    case 'answer':   hideThinking(); aiMsg(msg.answer); setBusy(false); break;
+    case 'error':    hideThinking(); sysMsg('⚠ '+msg.message); setBusy(false); break;
+    case 'cleared':  clearMessages(); sysMsg('Conversation cleared.'); break;
+    case 'pong': break;
+  }
+}
+
+function setConnected(ok) {
+  const pill = document.getElementById('status-pill');
+  const lbl  = document.getElementById('status-label');
+  pill.className = 'status-pill'+(ok?' connected':'');
+  lbl.textContent = ok ? 'Connected' : 'Reconnecting…';
+}
+
+// ── Messages ───────────────────────────────────────────────────────────────────
+const $m = () => document.getElementById('messages');
+function removeEmptyState() { const e=document.getElementById('empty-state'); if(e) e.remove(); }
+function scrollBottom() { const m=$m(); requestAnimationFrame(()=>{ m.scrollTop=m.scrollHeight; }); }
+
+function sysMsg(text) {
+  removeEmptyState();
+  const el=document.createElement('div'); el.className='msg msg-sys';
+  el.innerHTML=`<div class="msg-bubble">${text}</div>`;
+  $m().appendChild(el); scrollBottom();
+}
+function userMsg(text) {
+  removeEmptyState();
+  const time=ts();
+  const el=document.createElement('div'); el.className='msg msg-user';
+  el.innerHTML=`<div class="msg-bubble">${escHtml(text)}</div><div class="msg-meta">${time}</div>`;
+  $m().appendChild(el); scrollBottom();
+}
+function aiMsg(text) {
+  const time=ts();
+  const el=document.createElement('div'); el.className='msg msg-ai';
+  el.innerHTML=`
+    <div style="display:flex;align-items:flex-start;gap:5px">
+      <div class="msg-bubble" style="flex:1">${formatAnswer(text)}</div>
+      <button class="copy-btn" onclick="copyText(this)" data-text="${escAttr(text)}">⎘</button>
+    </div>
+    <div class="msg-meta">${time}</div>`;
+  $m().appendChild(el); scrollBottom();
+}
+function showThinking() {
+  if(document.getElementById('thinking')) return;
+  const el=document.createElement('div'); el.className='msg msg-ai'; el.id='thinking';
+  el.innerHTML=`<div class="thinking-bubble"><div class="dots"><span></span><span></span><span></span></div>Analyzing video…</div>`;
+  $m().appendChild(el); scrollBottom();
+}
+function hideThinking()  { const e=document.getElementById('thinking'); if(e) e.remove(); }
+function clearMessages() { $m().innerHTML=''; }
+
+// ── Send ───────────────────────────────────────────────────────────────────────
+function setBusy(b) {
+  busy=b;
+  document.getElementById('question-input').disabled = b||!videoReady;
+  document.getElementById('send-btn').disabled       = b||!videoReady;
+  if(!b) document.getElementById('question-input').focus();
+}
+function doSend() {
+  const inp=document.getElementById('question-input');
+  const q=inp.value.trim();
+  if(!q||busy||!videoReady||!ws||ws.readyState!==1) return;
+  inp.value=''; autoResize(inp); setBusy(true); userMsg(q);
+  ws.send(JSON.stringify({type:'question',question:q}));
+}
+document.getElementById('send-btn').onclick=doSend;
+document.getElementById('question-input').addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();doSend();}
+});
+const qinput=document.getElementById('question-input');
+function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,110)+'px';}
+qinput.addEventListener('input',()=>autoResize(qinput));
+function useChip(el){ qinput.value=el.textContent; qinput.focus(); autoResize(qinput); }
+
+document.getElementById('clear-btn').onclick=()=>{
+  if(ws&&ws.readyState===1) ws.send(JSON.stringify({type:'clear'}));
+  else clearMessages();
+};
+
+// ── File select ────────────────────────────────────────────────────────────────
+const dropZone=document.getElementById('drop-zone');
+const fileInput=document.getElementById('file-input');
+dropZone.addEventListener('dragover', e=>{e.preventDefault();dropZone.classList.add('drag-over');});
+dropZone.addEventListener('dragleave',()=>dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop',e=>{e.preventDefault();dropZone.classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f)selectFile(f);});
+fileInput.onchange=()=>{if(fileInput.files[0])selectFile(fileInput.files[0]);};
+
+function selectFile(f) {
+  if(f.size>100*1024*1024){sysMsg('⚠ File exceeds the 100 MB limit.');return;}
+  selectedFile=f;
+  const pv=document.getElementById('video-preview');
+  pv.src=URL.createObjectURL(f); pv.style.display='block';
+  document.getElementById('file-badge').style.display='flex';
+  document.getElementById('file-name-lbl').textContent=f.name;
+  document.getElementById('file-size-lbl').textContent=fmtSize(f.size);
+  document.getElementById('upload-btn').disabled=false;
+  document.getElementById('upload-btn').innerHTML='⬆ Upload Video';
+}
+
+// ── Upload ─────────────────────────────────────────────────────────────────────
+document.getElementById('upload-btn').onclick=async()=>{
+  if(!selectedFile||!sessionId||!authToken) return;
+  const btn=document.getElementById('upload-btn');
+  const pw=document.getElementById('progress-wrap');
+  const pf=document.getElementById('progress-fill');
+  const pl=document.getElementById('progress-label');
+  btn.disabled=true; pw.style.display='block';
+  let pct=0;
+  const tick=setInterval(()=>{ pct=Math.min(pct+5,95); pf.style.width=pct+'%'; pl.textContent=`Uploading… ${pct}%`; },150);
+  const form=new FormData(); form.append('file',selectedFile);
+  try {
+    const res=await fetch(`/upload?session_id=${sessionId}&token=${authToken}`,{method:'POST',body:form});
+    clearInterval(tick); pf.style.width='100%';
+    if(res.ok){
+      const data=await res.json();
+      videoReady=true; setBusy(false);
+      pl.textContent=`✓ Ready  (${data.size_mb} MB)`;
+      btn.innerHTML='🔄 Replace Video'; btn.disabled=false;
+      sysMsg(`✅ Video ready (${data.size_mb} MB). Ask your first question!`);
+    } else {
+      const err=await res.json().catch(()=>({}));
+      pl.textContent='✗ Failed';
+      sysMsg('❌ Upload failed: '+(err.detail||res.statusText));
+      btn.disabled=false; btn.innerHTML='⬆ Upload Video';
+    }
+  } catch(e) {
+    clearInterval(tick); pl.textContent='✗ Network error';
+    sysMsg('❌ Upload error: '+e.message);
+    btn.disabled=false; btn.innerHTML='⬆ Upload Video';
+  }
+  setTimeout(()=>{ pw.style.display='none'; pf.style.width='0%'; },2500);
+};
+
+// ── Health polling ─────────────────────────────────────────────────────────────
+async function pollHealth() {
+  try {
+    const r=await fetch('/health'); const d=await r.json();
+    document.getElementById('srv-model').textContent  = d.model_name ? d.model_name.split('/').pop() : '—';
+    document.getElementById('srv-status').innerHTML   = `<span class="badge ${d.model_loaded?'badge-green':'badge-yellow'}">${d.model_loaded?'Ready':'Loading…'}</span>`;
+    document.getElementById('srv-users').textContent  = `${d.active_connections} / ${d.max_connections}`;
+    document.getElementById('srv-ram').textContent    = d.ram_available_gb ? `${d.ram_available_gb} GB` : '—';
+    const gs=document.getElementById('gpu-section');
+    if(d.gpus&&d.gpus.length){
+      gs.innerHTML=d.gpus.map(g=>{
+        const pct=Math.round((g.vram_used_gb/g.vram_total_gb)*100);
+        return `<div class="gpu-item">
+          <div class="gpu-lbl"><span>GPU ${g.id} · ${g.name.replace('NVIDIA ','')}</span><span>${g.vram_used_gb}/${g.vram_total_gb} GB</span></div>
+          <div class="gpu-bar"><div class="gpu-bar-fill" style="width:${pct}%"></div></div>
+        </div>`;
+      }).join('');
+    }
+  } catch(e){}
+}
+setInterval(pollHealth, 20000);
+setInterval(()=>{ if(ws&&ws.readyState===1) ws.send(JSON.stringify({type:'ping'})); }, 25000);
+
+// ── Helpers ────────────────────────────────────────────────────────────────────
+function ts()      { return new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); }
+function escHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escAttr(s){ return s.replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function fmtSize(b){ if(b<1024)return b+' B'; if(b<1048576)return(b/1024).toFixed(1)+' KB'; return(b/1048576).toFixed(1)+' MB'; }
+function formatAnswer(t){
+  return escHtml(t)
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/`(.+?)`/g,'<code style="background:var(--code-bg);color:var(--code-text);padding:1px 5px;border-radius:4px;font-size:13px">$1</code>')
+    .replace(/\n/g,'<br>');
+}
+function copyText(btn){
+  navigator.clipboard.writeText(btn.dataset.text).then(()=>{
+    const o=btn.textContent; btn.textContent='✓';
+    setTimeout(()=>btn.textContent=o,1500);
+  });
+}
+</script>
+</body>
+</html>

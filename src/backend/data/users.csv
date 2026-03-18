@@ -1,0 +1,2 @@
+id,name,email,password_hash,role,created_at,last_login
+1,Abhishek,founder@gudsky.org,56500225216fa3cae143121ec86e50efcf12eb999c26e0ea9579e6f448a6df78,user,2026-03-18T03:09:12.656803,2026-03-18T03:23:46.112027
